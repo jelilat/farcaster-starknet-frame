@@ -11,7 +11,10 @@ export default function Home() {
         <meta property="fc:frame:image" content={`${BASE_URL}/starknet.png`} />
         <meta property="fc:frame:button:1" content="Connect Starknet Wallet" />
         <meta property="fc:frame:button:1:action" content="post_redirect" />
-        <meta property="fc:frame:post_url" content={`${BASE_URL}/api/post`} />
+        <meta
+          property="fc:frame:post_url"
+          content={`${BASE_URL}/api/redirect`}
+        />
       </Head>
     </>
   );
