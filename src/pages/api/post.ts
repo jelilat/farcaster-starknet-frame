@@ -11,7 +11,7 @@ export default async function handler(
     res.status(405).json({ error: "Method Not Allowed" });
     return;
   }
-  const redirectUrl = `${BASE_URL}/verify`;
+  const redirectUrl = `https://farcaster-starknet-frame.vercel.app/`;
   // const { actionType, redirectUrl } = req.body;
   // if (actionType === "post_redirect") {
   // Perform the redirect
