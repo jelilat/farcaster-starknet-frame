@@ -13,7 +13,7 @@ export default function Home() {
         <meta property="fc:frame:button:1:action" content="post_redirect" />
         <meta
           property="fc:frame:post_url"
-          content={`${BASE_URL}/api/redirect`}
+          content={`${BASE_URL}api/redirect`}
         />
       </Head>
     </>
