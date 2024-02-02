@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSSLHubRpcClient, Message } from "@farcaster/hub-nodejs";
+import { Message } from "@farcaster/hub-nodejs";
+import axios from "axios";
 
 const HUB_URL = process.env["HUB_URL"];
-const client = HUB_URL ? getSSLHubRpcClient(HUB_URL) : undefined;
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,41 +10,45 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     // validate the message
+    const messageBytes = req.body["messageBytes"];
+    if (!messageBytes) {
+      return res.status(400).send("Missing messageBytes");
+    }
+
+    let validatedMessage: Message | undefined = undefined;
     try {
-      const messageBytes = req.body["messageBytes"];
-      if (!messageBytes) {
-        return res.status(400).send("Missing messageBytes");
+      const buffer = Buffer.from(messageBytes, "hex");
+      const response = await axios.post(
+        "https://nemes.farcaster.xyz:2281/v1/validateMessage",
+        buffer,
+        {
+          headers: { "Content-Type": "application/octet-stream" },
+        }
+      );
+
+      if (response && response.data && response.data.valid) {
+        validatedMessage = response.data.message;
       }
 
-      let validatedMessage: Message | undefined = undefined;
-      try {
-        const frameMessage = Message.decode(
-          Buffer.from(messageBytes || "", "hex")
-        );
-        const result = await client?.validateMessage(frameMessage);
-        if (result && result.isOk() && result.value.valid) {
-          validatedMessage = result.value.message;
-        }
-
-        // Also validate the frame url matches the expected url
-        let urlBuffer = validatedMessage?.data?.frameActionBody?.url || [];
-        const urlString = Buffer.from(urlBuffer).toString("utf-8");
-        if (
-          validatedMessage &&
-          !urlString.startsWith(process.env["BASE_URL"] || "")
-        ) {
-          return res.status(400).send(`Invalid frame url: ${urlBuffer}`);
-        }
-      } catch (e) {
-        return res.status(400).send(`Failed to validate message: ${e}`);
+      // Also validate the frame url matches the expected url
+      let urlBuffer = validatedMessage?.data?.frameActionBody?.url || [];
+      const urlString = atob(urlBuffer.toString());
+      if (
+        validatedMessage &&
+        !urlString.startsWith(process.env["BASE_URL"] || "")
+      ) {
+        res.status(400).json({ error: `invalid frame url: ${urlString}` });
       }
 
       const fid = validatedMessage?.data?.fid;
-
-      res.status(200).json({ fid: fid });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Error generating image");
+      if (!fid && fid !== 0) {
+        res.status(400).json({ error: "Invalid fid" });
+      }
+      res
+        .status(200)
+        .json({ fid: fid, timestamp: validatedMessage?.data?.timestamp });
+    } catch (e) {
+      res.status(400).json({ error: `Failed to validate message: ${e}` });
     }
   } else {
     // Handle any non-POST requests
