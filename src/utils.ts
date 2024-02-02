@@ -25,12 +25,12 @@ export function generateFarcasterFrame(image: string, choice: number) {
   `;
 }
 
-export async function validateMessage(messageBytes: string) {
-  const client = getHubRpcClient("https://nemes.farcaster.xyz:2283", {});
-  const hubMessage = Message.decode(Buffer.from(messageBytes, "hex"));
-  const res = await client.validateMessage(hubMessage);
+// export async function validateMessage(messageBytes: string) {
+//   const client = getHubRpcClient("https://nemes.farcaster.xyz:2283", {});
+//   const hubMessage = Message.decode(Buffer.from(messageBytes, "hex"));
+//   const res = await client.validateMessage(hubMessage);
 
-  if (res.isOk() && res.value.valid) {
-    return res.value.valid;
-  }
-}
+//   if (res.isOk() && res.value.valid) {
+//     return res.value.valid;
+//   }
+// }
