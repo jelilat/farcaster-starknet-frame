@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   useAccount,
   useConnect,
@@ -22,6 +22,7 @@ type FarcasterData = {
 };
 
 function ConnectWallet({ fid, timestamp }: FarcasterData) {
+  const [validSignature, setValidSignature] = useState(false);
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
@@ -63,6 +64,24 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
     await disconnect();
   };
 
+  const addMapping = async (fid: number, starknetAddress: string) => {
+    try {
+      const response = await fetch("/api/addMapping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fid, starknetAddress }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("Failed to add mapping:", error);
+    }
+  };
+
   const verifySignature = async (
     contractAddress: string,
     signature: Signature
@@ -78,21 +97,23 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
 
       const contract = new Contract(abi, contractAddress, provider);
       const msgHash = typedData.getMessageHash(message, contractAddress);
-      console.log(contractAddress, msgHash);
-      const validSignature = await contract.isValidSignature(
-        msgHash,
-        signature
-      );
-      console.log(validSignature);
+
+      await contract.isValidSignature(msgHash, signature);
+      setValidSignature(true);
       // Store the result in a database
+      addMapping(fid, contractAddress)
+        .then(() => {
+          console.log("Mapping added");
+          window.location.href = "/profile";
+        })
+        .catch((err) => console.error("Error adding mapping:", err));
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    if (data) {
-      console.log(data);
+    if (data && address) {
       verifySignature(address!, data);
     }
   }, [data]);
@@ -124,25 +145,29 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
         </button>
       ) : (
         <div>
-          <button
-            onClick={() => {
-              if (timeValid(timestamp)) {
-                signTypedData();
-              }
-            }}
-            disabled={!address}
-            style={{
-              padding: "10px 15px",
-              cursor: "pointer",
-              backgroundColor: "black",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              marginBottom: "10px",
-            }}
-          >
-            {isPending ? "Waiting for wallet..." : "Verify address ownership"}
-          </button>
+          {validSignature ? (
+            <div>Successfully verified ownership of address: {address}</div>
+          ) : (
+            <button
+              onClick={() => {
+                if (timeValid(timestamp)) {
+                  signTypedData();
+                }
+              }}
+              disabled={!address}
+              style={{
+                padding: "10px 15px",
+                cursor: "pointer",
+                backgroundColor: "black",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                marginBottom: "10px",
+              }}
+            >
+              {isPending ? "Waiting for wallet..." : "Verify address ownership"}
+            </button>
+          )}
           <br />
           <button
             onClick={disconnectWallet}

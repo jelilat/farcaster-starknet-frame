@@ -23,6 +23,7 @@ export default function Home() {
       })
         .then((res) => res.json())
         .then((res) => {
+          console.log(res.fid);
           if (timeValid(res.timestamp)) {
             setFid(res.fid);
             setTimestamp(res.timestamp);
