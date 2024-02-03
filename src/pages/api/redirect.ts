@@ -20,14 +20,9 @@ export default async function handler(
         messageBytes: string;
       };
     };
-    console.log(signedMessage);
+
     const messageBytes = signedMessage?.trustedData?.messageBytes;
-    console.log(`${BASE_URL}verify/${messageBytes}`);
-    // res.redirect(
-    //   302,
-    //   `https://www.farcaster-starknet-frame.vercel.app/verify/${messageBytes}`
-    // );
-    res.redirect(302, `${BASE_URL}/profile`);
+    res.redirect(302, `${BASE_URL}verify/${messageBytes}`);
   } else {
     res.status(405).end(); // Method Not Allowed
   }
