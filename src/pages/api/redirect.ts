@@ -22,6 +22,7 @@ export default async function handler(
     };
     console.log(signedMessage);
     const messageBytes = signedMessage?.trustedData?.messageBytes;
+    console.log(`${BASE_URL}verify/${messageBytes}`);
     // res.redirect(
     //   302,
     //   `https://www.farcaster-starknet-frame.vercel.app/verify/${messageBytes}`
