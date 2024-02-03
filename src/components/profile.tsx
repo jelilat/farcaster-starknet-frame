@@ -6,6 +6,8 @@ import Link from "next/link";
 
 export default function Home() {
   const [profileData, setProfileData] = useState(null);
+  const [retry, setRetry] = useState(false);
+  const [retries, setRetries] = useState(0);
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
@@ -22,30 +24,34 @@ export default function Home() {
     await disconnect();
   };
 
-  const getMapping = async (starknetAddress: string) => {
-    try {
-      const response = await fetch(
-        `/api/getMapping?starknetAddress=${starknetAddress}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      return response.json();
-    } catch (error) {
-      console.error("Failed to get mapping:", error);
-    }
-  };
-
   useEffect(() => {
-    if (address) {
+    const getMapping = async (starknetAddress: string) => {
+      try {
+        const response = await fetch(
+          `/api/getMapping?starknetAddress=${starknetAddress}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        setRetry(false);
+
+        return response.json();
+      } catch (error) {
+        setRetry(true);
+        setRetries(retries + 1);
+        console.error("Failed to get mapping:", error);
+      }
+    };
+
+    if (address || (address && retry && retries < 3)) {
       getMapping(address).then((res) => {
         if (res) {
+          console.log("res", res);
           fetch(`/api/userData?fid=${res.fid}`)
             .then((response) => response.json())
             .then((data) => {
-              console.log(data);
               setProfileData(data);
             })
             .catch((error) => {
@@ -54,7 +60,7 @@ export default function Home() {
         }
       });
     }
-  }, [address]);
+  }, [address, retry, retries]);
   return (
     <div
       style={{

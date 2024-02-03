@@ -14,7 +14,7 @@ import {
   RpcProvider,
   Signature,
 } from "starknet";
-import { timeValid } from "@/utils";
+import { timeValid, getAbi } from "@/utils";
 import Profile from "@/components/profile";
 
 type FarcasterData = {
@@ -92,9 +92,7 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
     });
 
     try {
-      const classHash = await provider.getClassHashAt(contractAddress);
-      const contractClass = await provider.getClass(classHash);
-      const abi = contractClass.abi;
+      const abi = await getAbi(provider, contractAddress);
 
       const contract = new Contract(abi, contractAddress, provider);
       const msgHash = typedData.getMessageHash(message, contractAddress);
@@ -172,7 +170,7 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
             </button>
           )}
           <br />
-          <button
+          {/* <button
             onClick={disconnectWallet}
             style={{
               padding: "10px 15px",
@@ -184,7 +182,7 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
             }}
           >
             Disconnect wallet
-          </button>
+          </button> */}
         </div>
       )}
     </div>

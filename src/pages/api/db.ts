@@ -1,20 +1,29 @@
 import { Pool } from "pg";
 
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL + "?sslmode=require",
+  connectionString: process.env.POSTGRES_URL,
 });
 
 // Function to add a new mapping
-export async function addMapping(
+
+export async function addOrUpdateMapping(
   fid: number,
   starknetAddress: string
 ): Promise<void> {
   const client = await pool.connect();
   try {
-    await client.query(
-      "INSERT INTO user_mappings (fid, starknet_address) VALUES ($1, $2)",
-      [fid, starknetAddress]
-    );
+    const existingMapping = await getMappingByFid(fid);
+    if (existingMapping) {
+      await client.query(
+        "UPDATE user_mappings SET starknet_address = $1 WHERE fid = $2",
+        [starknetAddress, fid]
+      );
+    } else {
+      await client.query(
+        "INSERT INTO user_mappings (fid, starknet_address) VALUES ($1, $2)",
+        [fid, starknetAddress]
+      );
+    }
   } finally {
     client.release();
   }

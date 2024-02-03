@@ -10,7 +10,11 @@ export default async function handler(
 
     try {
       const fid = await getMappingByStarknetAddress(starknetAddress);
-      res.status(200).json({ fid });
+      if (fid) {
+        res.status(200).json({ fid });
+      } else {
+        res.status(404).json({ error: "Mapping not found" });
+      }
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
     }

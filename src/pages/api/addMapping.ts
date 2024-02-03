@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { addMapping } from "./db";
+import { addOrUpdateMapping } from "./db";
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,7 +9,7 @@ export default async function handler(
     const { fid, starknetAddress } = req.body;
 
     try {
-      await addMapping(fid, starknetAddress);
+      await addOrUpdateMapping(fid, starknetAddress);
       res.status(200).json({ message: "Mapping added successfully" });
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
