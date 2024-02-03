@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
 import { useStarknetkitConnectModal } from "starknetkit";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   const [profileData, setProfileData] = useState(null);
@@ -71,19 +72,29 @@ export default function Home() {
           )}
         </div>
       ) : (
-        <button
-          onClick={connectWallet}
-          style={{
-            padding: "10px 15px",
-            cursor: "pointer",
-            backgroundColor: "black",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-          }}
-        >
-          Connect to Starknet
-        </button>
+        <div>
+          <p
+            style={{
+              marginBottom: "15px",
+              fontSize: "1.2rem",
+            }}
+          >
+            Connect to Starknet to view your Farcaster profile
+          </p>
+          <button
+            onClick={connectWallet}
+            style={{
+              padding: "10px 15px",
+              cursor: "pointer",
+              backgroundColor: "black",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+            }}
+          >
+            Connect wallet
+          </button>
+        </div>
       )}
     </div>
   );
@@ -101,6 +112,20 @@ const ProfileCard = ({ profileData }: any) => {
         margin: "auto",
       }}
     >
+      {!profileData.pfp &&
+        !profileData.username &&
+        !profileData.bio &&
+        !profileData.display && (
+          <div>
+            <p>No Farcaster profile connected to this address yet.</p>
+            <p>
+              Connect Farcaster to Starknet{" "}
+              <Link href="https://warpcast.com/tjelailah/0xae04135d">here</Link>{" "}
+              to view your Farcaster profile
+            </p>
+          </div>
+        )}
+
       {profileData.pfp && (
         <Image
           src={profileData.pfp}
@@ -110,9 +135,9 @@ const ProfileCard = ({ profileData }: any) => {
           style={{ borderRadius: "50%" }}
         />
       )}
-      <h3>{profileData.username || "No Username"}</h3>
-      <p>{profileData.bio || "No Bio"}</p>
-      <p>{profileData.display || "No Display Information"}</p>
+      <h3>{profileData.username}</h3>
+      <p>{profileData.bio}</p>
+      <p>{profileData.display}</p>
     </div>
   );
 };

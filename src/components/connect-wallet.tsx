@@ -15,6 +15,7 @@ import {
   Signature,
 } from "starknet";
 import { timeValid } from "@/utils";
+import Profile from "@/components/profile";
 
 type FarcasterData = {
   fid: number;
@@ -104,7 +105,9 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
       addMapping(fid, contractAddress)
         .then(() => {
           console.log("Mapping added");
-          window.location.href = "/profile";
+          window.alert(
+            `Successfully verified ownership of address: ${address}`
+          );
         })
         .catch((err) => console.error("Error adding mapping:", err));
     } catch (error) {
@@ -146,7 +149,7 @@ function ConnectWallet({ fid, timestamp }: FarcasterData) {
       ) : (
         <div>
           {validSignature ? (
-            <div>Successfully verified ownership of address: {address}</div>
+            <Profile />
           ) : (
             <button
               onClick={() => {
