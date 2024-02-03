@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { BASE_URL } from "@/utils";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,10 +22,11 @@ export default async function handler(
     };
     console.log(signedMessage);
     const messageBytes = signedMessage?.trustedData?.messageBytes;
-    res.redirect(
-      302,
-      `https://farcaster-starknet-frame.vercel.app/verify/${messageBytes}`
-    );
+    // res.redirect(
+    //   302,
+    //   `https://www.farcaster-starknet-frame.vercel.app/verify/${messageBytes}`
+    // );
+    res.redirect(302, `${BASE_URL}/profile`);
   } else {
     res.status(405).end(); // Method Not Allowed
   }
