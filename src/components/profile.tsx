@@ -6,8 +6,7 @@ import Link from "next/link";
 
 export default function Home() {
   const [profileData, setProfileData] = useState(null);
-  const [retry, setRetry] = useState(false);
-  const [retries, setRetries] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
@@ -24,31 +23,35 @@ export default function Home() {
     await disconnect();
   };
 
-  useEffect(() => {
-    const getMapping = async (starknetAddress: string) => {
-      try {
-        const response = await fetch(
-          `/api/getMapping?starknetAddress=${starknetAddress}`
-        );
+  const getMapping = async (starknetAddress: string, retries: number) => {
+    try {
+      const response = await fetch(
+        `/api/getMapping?starknetAddress=${starknetAddress}`
+      );
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        setRetry(false);
-
-        return response.json();
-      } catch (error) {
-        setRetry(true);
-        setRetries(retries + 1);
-        console.error("Failed to get mapping:", error);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    };
 
-    if (address || (address && retry && retries < 3)) {
-      getMapping(address).then((res) => {
+      return response.json();
+    } catch (error) {
+      // wait 1 second before retrying
+      setTimeout(() => {
+        if (retries < 3) {
+          getMapping(starknetAddress, retries + 1);
+        } else {
+          setErrorMessage("Failed to get mapping");
+        }
+      }, 1000);
+      console.error("Failed to get mapping:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (address) {
+      let retries = 0;
+      getMapping(address, retries).then((res) => {
         if (res) {
-          console.log("res", res);
           fetch(`/api/userData?fid=${res.fid}`)
             .then((response) => response.json())
             .then((data) => {
@@ -60,7 +63,8 @@ export default function Home() {
         }
       });
     }
-  }, [address, retry, retries]);
+  }, [address]);
+
   return (
     <div
       style={{
@@ -74,7 +78,9 @@ export default function Home() {
           {profileData ? (
             <ProfileCard profileData={profileData} />
           ) : (
-            <p>Loading...</p>
+            <p>
+              {errorMessage ? errorMessage : "Fetching Farcaster profile..."}
+            </p>
           )}
         </div>
       ) : (
