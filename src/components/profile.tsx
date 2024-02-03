@@ -139,7 +139,8 @@ const ProfileCard = ({ profileData }: any) => {
         )}
 
       {profileData.pfp && (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           src={profileData.pfp}
           alt="Profile"
           width={100}

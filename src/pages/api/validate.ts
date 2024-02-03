@@ -2,8 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Message } from "@farcaster/hub-nodejs";
 import axios from "axios";
 
-const HUB_URL = process.env["HUB_URL"];
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
